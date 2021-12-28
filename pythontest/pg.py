@@ -185,7 +185,7 @@ def addText(tmpText):
 def consoles(): 
     while True: 
         msgs=client.recv(1024)
-        msgs = msgs.decode('utf-8')
+        msgs = msgs.decode()
         for msg in msgs.split('&&'):
             if msg:
                 if msg[0] == '`':

@@ -208,7 +208,7 @@ def acceptC():
     thr=threading.Thread(target=consoles,args=()) 
     thr.Daemon=True 
     textResult = '>' + name + '|' + image_url + '&&'
-    client.sendall(textResult.encode())
+    client.send(textResult.encode())
     thr.start()
 
 

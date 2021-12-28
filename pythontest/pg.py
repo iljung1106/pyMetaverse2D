@@ -193,7 +193,7 @@ def consoles():
                 del clientsPos[tmpinfos[0]]
             if msg[0] == '~':
                 tmpinfos = msg[1:].split("|")
-                clientsPos[tmpinfos[0]] = [tmpinfos[1], tmpinfos[2]]
+                clientsPos[tmpinfos[0]] = [float(tmpinfos[1]), float(tmpinfos[2])]
                 
 
 

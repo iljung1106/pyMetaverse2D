@@ -14,7 +14,6 @@ def threaded(client_socket, addr):
         tmpdata += i + '|' + clientInfos[i]
         tmpdata = tmpdata.encode()
         client_socket.sendall(tmpdata)
-    client_socket.sendall()
     while True: 
 
         try:

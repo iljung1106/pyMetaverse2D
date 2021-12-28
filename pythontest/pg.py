@@ -16,6 +16,13 @@ import random
 #-*- coding: utf-8 -*-
 
 
+# if getattr(sys, 'frozen', False):
+#     CurrentPath = os.environ.get("_MEIPASS2")
+    
+# else:
+#     #CurrentPath = os.path.dirname(__file__)
+#     CurrentPath = ''
+
 
 # 자음-초성/종성
 cons = {'r':'ㄱ', 'R':'ㄲ', 's':'ㄴ', 'e':'ㄷ', 'E':'ㄸ', 'f':'ㄹ', 'a':'ㅁ', 'q':'ㅂ', 'Q':'ㅃ', 't':'ㅅ', 'T':'ㅆ',
@@ -147,7 +154,7 @@ def get_hanguel_state():
     return (hllDll.GetKeyState(VK_HANGUEL) & 0x15)
  
 
-os.chdir(sys.path[0])
+os.chdir((sys.path[0]))
 
 text1 = '텍스트를 입력하려면 엔터키를 누르세요'
 font1 = pygame.font.Font('gothic.ttf',15)
@@ -167,7 +174,7 @@ if os.path.exists( name + ".png"):
 
 #tempPlayerImage = pygame.image.load('tempPlayer.png')
 os.system("curl " + image_url + " > " + name + ".png")
-tempPlayerImage = pygame.image.load( name + ".png")
+tempPlayerImage = pygame.image.load(name + ".png")
 tempPlayerImage = pygame.transform.scale(tempPlayerImage, (100,100))
 playerPos = [0,0]
 playerSpeed = 7
@@ -205,7 +212,7 @@ def consoles():
                 if msg[0] == '>':
                     tmpinfos = msg[1:].split("|")
                     os.system("curl " + tmpinfos[1] + " > " + tmpinfos[0] + ".png")
-                    clientsImage[tmpinfos[0]] = pygame.image.load( tmpinfos[0]+ ".png")
+                    clientsImage[tmpinfos[0]] = pygame.image.load(tmpinfos[0]+ ".png")
                     clientsImage[tmpinfos[0]] = pygame.transform.scale(clientsImage[tmpinfos[0]], (100,100))
                     clientsPos[tmpinfos[0]] = [0,0]
                 if msg[0] == '<':

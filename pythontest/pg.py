@@ -178,24 +178,25 @@ def addText(tmpText):
 def consoles(): 
     global eney,enex 
     while True: 
-        msg=client.recv(1024)
-        if msg:
-            msg = msg.decode('utf-8')
-            if msg[0] == '`':
-                addText(msg)
-            if msg[0] == '>':
-                tmpinfos = msg[1:].split("|")
-                os.system("curl " + tmpinfos[1] + " > " + tmpinfos[0] + ".png")
-                clientsImage[tmpinfos[0]] = pygame.image.load( tmpinfos[0]+ ".png")
-                clientsImage[tmpinfos[0]] = pygame.transform.scale(clientsImage[tmpinfos[0]], (100,100))
-                clientsPos[tmpinfos[0]] = [0,0]
-            if msg[0] == '<':
-                tmpinfos = msg[1:].split("|")
-                del clientsImage[tmpinfos[0]]
-                del clientsPos[tmpinfos[0]]
-            if msg[0] == '~':
-                tmpinfos = msg[1:].split("|")
-                clientsPos[tmpinfos[0]] = [float(tmpinfos[1]), float(tmpinfos[2])]
+        msgs=client.recv(1024)
+        for msg in msgs.split('&&'):
+            if msg:
+                msg = msg.decode('utf-8')
+                if msg[0] == '`':
+                    addText(msg)
+                if msg[0] == '>':
+                    tmpinfos = msg[1:].split("|")
+                    os.system("curl " + tmpinfos[1] + " > " + tmpinfos[0] + ".png")
+                    clientsImage[tmpinfos[0]] = pygame.image.load( tmpinfos[0]+ ".png")
+                    clientsImage[tmpinfos[0]] = pygame.transform.scale(clientsImage[tmpinfos[0]], (100,100))
+                    clientsPos[tmpinfos[0]] = [0,0]
+                if msg[0] == '<':
+                    tmpinfos = msg[1:].split("|")
+                    del clientsImage[tmpinfos[0]]
+                    del clientsPos[tmpinfos[0]]
+                if msg[0] == '~':
+                    tmpinfos = msg[1:].split("|")
+                    clientsPos[tmpinfos[0]] = [float(tmpinfos[1]), float(tmpinfos[2])]
                 
 
 
@@ -206,7 +207,7 @@ def acceptC():
     client.connect((ip,25565)) 
     thr=threading.Thread(target=consoles,args=()) 
     thr.Daemon=True 
-    textResult = '>' + name + '|' + image_url
+    textResult = '>' + name + '|' + image_url + '&&'
     client.sendall(textResult.encode())
     thr.start()
 
@@ -233,7 +234,7 @@ while running:
         if event.type == pygame.KEYDOWN and isChatting:
             if event.key == pygame.K_RETURN: 
                 isChatting = False
-                textResult = '`' + name + " : " + text1 + engkor(tempKor)
+                textResult = '`' + name + " : " + text1 + engkor(tempKor) + '&&'
                 text1 = ''
                 tempKor = '' 
                 client.sendall(textResult.encode())

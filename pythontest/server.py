@@ -3,11 +3,18 @@ from _thread import *
 from threading import Thread
 
 clients = []
+clientInfos = {}
 def threaded(client_socket, addr): 
-
+    name = ''
     print('Connected by :', addr[0], ':', addr[1]) 
     global clients
     clients.append(client_socket)
+    for i in clientInfos.keys():
+        tmpdata = ">"
+        tmpdata += i + '|' + clientInfos[i]
+        tmpdata = tmpdata.encode()
+        client_socket.sendall(tmpdata)
+    client_socket.sendall()
     while True: 
 
         try:
@@ -22,10 +29,25 @@ def threaded(client_socket, addr):
             if data.decode()[0] == '`':
                 for i in clients:
                     i.sendall(data) 
+            elif data.decode()[0] == '>':
+                tmp = data.decode()[1:].split('|')
+                clientInfos[tmp[0]] = tmp[1]
+                name = tmp[1]
+                for i in clients:
+                    if i != client_socket:
+                        i.sendall(data)              
+            elif data.decode()[0] == '~':
+                for i in clients:
+                    i.sendall(data) 
 
         except ConnectionResetError as e:
             clients.remove(client_socket)
+            del clientInfos[name]
             print('Disconnected by ' + addr[0],':',addr[1])
+            tmpdata = "<"
+            tmpdata += name + '|' + clientInfos[name]
+            tmpdata = tmpdata.encode()
+            client_socket.sendall(tmpdata)
             break
              
     client_socket.close() 

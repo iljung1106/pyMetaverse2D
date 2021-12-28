@@ -144,8 +144,8 @@ running = True
 if os.path.exists( name + ".png"):
     os.remove( name + ".png")
 
-os.system("curl " + image_url + " > " + name + ".png")
 #tempPlayerImage = pygame.image.load('tempPlayer.png')
+os.system("curl " + image_url + " > " + name + ".png")
 tempPlayerImage = pygame.image.load( name + ".png")
 tempPlayerImage = pygame.transform.scale(tempPlayerImage, (100,100))
 playerPos = [0,0]
@@ -160,6 +160,9 @@ isChatting = False
 textResult = ''
 getTicksLastFrame = 0
 clock = pygame.time.Clock()
+
+clientsImage = {}
+clientsPos = {}
 
 def addText(tmpText):
     global texts
@@ -178,6 +181,20 @@ def consoles():
             msg = msg.decode('utf-8')
             if msg[0] == '`':
                 addText(msg)
+            if msg[0] == '>':
+                tmpinfos = msg[1:].split("|")
+                os.system("curl " + tmpinfos[1] + " > " + tmpinfos[0] + ".png")
+                clientsImage[tmpinfos[0]] = pygame.image.load( tmpinfos[0]+ ".png")
+                clientsImage[tmpinfos[0]] = pygame.transform.scale(clientsImage[tmpinfos[0]], (100,100))
+                clientsPos[tmpinfos[0]] = [0,0]
+            if msg[0] == '<':
+                tmpinfos = msg[1:].split("|")
+                del clientsImage[tmpinfos[0]]
+                del clientsPos[tmpinfos[0]]
+            if msg[0] == '~':
+                tmpinfos = msg[1:].split("|")
+                clientsPos[tmpinfos[0]] = [tmpinfos[1], tmpinfos[2]]
+                
 
 
 def acceptC():
@@ -187,7 +204,7 @@ def acceptC():
     client.connect((ip,25565)) 
     thr=threading.Thread(target=consoles,args=()) 
     thr.Daemon=True 
-    textResult = '>' + name
+    textResult = '>' + name + '|' + image_url
     client.sendall(textResult.encode())
     thr.start()
 
@@ -205,6 +222,8 @@ while running:
     CameraPos[0] = (playerPos[0] + CameraPos[0] * 5) / 6
     CameraPos[1] = (playerPos[1] + CameraPos[1] * 5) / 6
     for event in pygame.event.get():
+        tmpt = "~"
+        tmpt += name + '|' + str(playerPos[0]) + '|' + str(playerPos[1])
         if event.type == pygame.QUIT:
             running = False
 
@@ -246,24 +265,33 @@ while running:
                 playerVelocity[0] = 0
                 playerVelocity[1] = 0
 
+
             if event.key == pygame.K_w:
                 playerVelocity[1] -= playerSpeed
+                client.sendall(tmpt.encode())
             if event.key == pygame.K_a:
                 playerVelocity[0] -= playerSpeed
+                client.sendall(tmpt.encode())
             if event.key == pygame.K_s:
                 playerVelocity[1] += playerSpeed
+                client.sendall(tmpt.encode())
             if event.key == pygame.K_d:
                 playerVelocity[0] += playerSpeed
+                client.sendall(tmpt.encode())
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
                 playerVelocity[1] =0
+                client.sendall(tmpt.encode())
             if event.key == pygame.K_a:
                 playerVelocity[0] =0
+                client.sendall(tmpt.encode())
             if event.key == pygame.K_s:
                 playerVelocity[1] =0
+                client.sendall(tmpt.encode())
             if event.key == pygame.K_d:
                 playerVelocity[0] =0
+                client.sendall(tmpt.encode())
 
     if not isChatting:
         playerPos[0] += playerVelocity[0] * deltaTime
@@ -274,6 +302,9 @@ while running:
     screen.fill("WHITE")
 
     screen.blit(img1,rect1)
+
+    for i in clientsImage.keys():
+        screen.blit(clientsImage[i], [worldToCamera(clientsPos[i])[0] - 50, worldToCamera(clientsPos[i])[1] - 50])
 
     screen.blit(tempPlayerImage, [worldToCamera(playerPos)[0] - 50, worldToCamera(playerPos)[1] - 50])
     screen.blit(tempPlayerImage, worldToCamera([0, 0]))

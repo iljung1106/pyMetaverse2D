@@ -6,14 +6,13 @@ import ctypes
 from ctypes import wintypes
 import pyautogui
 from pygame.constants import K_w
-import pyperclip
 import unicode 
 import socket #소켓 
 import threading #멀티쓰레딩
 from PIL import Image
 import os
 import sys
-
+import random
 #-*- coding: utf-8 -*-
 
 
@@ -111,6 +110,18 @@ def worldToCamera(tempPos):
     pos[1] += height/2
     return pos
 
+def cameraToWorld(tempPos):
+    pos = tempPos.copy()
+    pos[0] -= width/2
+    pos[1] -= height/2
+
+    pos[0] /= ScreenCameraRatio
+    pos[1] /= ScreenCameraRatio
+    
+    pos[0] += CameraPos[0]
+    pos[1] += CameraPos[1]
+    return pos
+
 
 print('접속할 서버의 ip 주소를 입력해 주세요')
 ip = input()
@@ -145,6 +156,7 @@ img1 = font1.render(text1,True,pygame.Color(100, 100, 100, 255))
 rect1 = img1.get_rect()
 rect1.topleft = (30,30)
 cursor1 = pygame.Rect(rect1.topright,(3,rect1.height))
+colorRect = pygame.Rect((1200,620), (40,40))
 
 texts = ['공백', '공백', '공백', '공백', '공백', '공백', '공백', '공백']
 
@@ -206,6 +218,11 @@ def consoles():
                     tmpinfos = msg[1:].split("|")
                     if(tmpinfos[0] in clientsPos.keys() and isNumber(tmpinfos[1]) and isNumber(tmpinfos[2])):
                         clientsPos[tmpinfos[0]] = [float(tmpinfos[1]), float(tmpinfos[2])]
+                if msg[0] == '+':
+                    tmpinfos = msg[1:].split("|")
+                    ttmp = tmpinfos[0].split(',')
+                    tmpColor = [float(ttmp[0]), float(ttmp[1]), float(ttmp[2])]
+                    spots.append([tmpColor, float(tmpinfos[1]), float(tmpinfos[2])])
                 
 
 
@@ -223,7 +240,9 @@ def acceptC():
 
 acceptC()
 
+spots = []
 
+color = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
 while running:
     dt = clock.tick(60)
     tempText = ''
@@ -231,8 +250,6 @@ while running:
     # deltaTime in seconds.
     deltaTime = (t - getTicksLastFrame) / 1000.0
     getTicksLastFrame = t
-    CameraPos[0] = (playerPos[0] + CameraPos[0] * 5) / 6
-    CameraPos[1] = (playerPos[1] + CameraPos[1] * 5) / 6
     for event in pygame.event.get():
         tmpt = "~"
         tmpt += name + '|' + str(playerPos[0]) + '|' + str(playerPos[1]) + '&&'
@@ -241,6 +258,15 @@ while running:
             client.sendall(textResult.encode())
             running = False
             break
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            [mx, my] = pygame.mouse.get_pos()
+            mx = cameraToWorld([mx, my])[0]
+            my = cameraToWorld([mx, my])[1]
+            spots.append((color, mx, my))
+            textResult = '+' + str(color[0]) + ',' + str(color[1]) + ',' + str(color[2]) + ',' + '|' + str(mx) + '|' + str(my) + '&'
+            client.sendall(textResult.encode())
+
 
         if event.type == pygame.KEYDOWN and isChatting:
             if event.key == pygame.K_RETURN: 
@@ -289,6 +315,9 @@ while running:
             if event.key == pygame.K_d:
                 playerVelocity[0] += playerSpeed
 
+            if event.key == pygame.K_r:
+                color = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
+
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
                 playerVelocity[1] =0
@@ -304,11 +333,16 @@ while running:
         playerPos[1] += playerVelocity[1] * deltaTime
         client.sendall(tmpt.encode())
 
- 
+    
+    CameraPos[0] = (playerPos[0] + CameraPos[0] * 5) / 6
+    CameraPos[1] = (playerPos[1] + CameraPos[1] * 5) / 6
 
     screen.fill("WHITE")
 
-    screen.blit(img1,rect1)
+    tempBack = pygame.image.load("resources/tempBack2.png")
+    tempBack = pygame.transform.scale(tempBack, (1200, 1200))
+    screen.blit(tempBack, worldToCamera([-16.67, -16.67]))
+
 
     for i in clientsImage.keys():
         screen.blit(clientsImage[i], [worldToCamera(clientsPos[i])[0] - 50, worldToCamera(clientsPos[i])[1] - 50])
@@ -318,7 +352,21 @@ while running:
         screen.blit(iImg, r)
 
     screen.blit(tempPlayerImage, [worldToCamera(playerPos)[0] - 50, worldToCamera(playerPos)[1] - 50])
-    screen.blit(tempPlayerImage, worldToCamera([0, 0]))
+
+    for c in spots:
+        pygame.draw.circle(screen, c[0], worldToCamera([c[1], c[2]]), 10)
+        print(c)
+
+
+
+
+    screen.blit(img1,rect1)
+    
+    timg = font1.render("R키를 눌러 색상을 새로 배정",True,"BLACK")
+
+    r = timg.get_rect()
+    r.bottomright = (1240, 690)
+    screen.blit(timg, r)
 
     i = 0
     for t in texts.__reversed__():
@@ -332,6 +380,10 @@ while running:
     if time.time() % 1 > 0.5 and isChatting:
         pygame.draw.rect(screen, "RED", cursor1)
 
+    colorRect.center = (1220, 650)
+    colorRect.width = 40
+    colorRect.height = 40
+    pygame.draw.rect(screen, color, colorRect)
     pygame.display.update()
 
  

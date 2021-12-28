@@ -179,9 +179,9 @@ def consoles():
     global eney,enex 
     while True: 
         msgs=client.recv(1024)
+        msgs = msgs.decode('utf-8')
         for msg in msgs.split('&&'):
             if msg:
-                msg = msg.decode('utf-8')
                 if msg[0] == '`':
                     addText(msg)
                 if msg[0] == '>':

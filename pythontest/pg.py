@@ -191,12 +191,14 @@ def consoles():
                     clientsImage[tmpinfos[0]] = pygame.transform.scale(clientsImage[tmpinfos[0]], (100,100))
                     clientsPos[tmpinfos[0]] = [0,0]
                 if msg[0] == '<':
-                    tmpinfos = msg[1:].split("|")
-                    del clientsImage[tmpinfos[0]]
-                    del clientsPos[tmpinfos[0]]
+                    tmpinfos = msg[1:].split("|")          
+                    if(tmpinfos[0] in clientsPos.keys()):
+                        del clientsImage[tmpinfos[0]]
+                        del clientsPos[tmpinfos[0]]
                 if msg[0] == '~':
                     tmpinfos = msg[1:].split("|")
-                    clientsPos[tmpinfos[0]] = [float(tmpinfos[1]), float(tmpinfos[2])]
+                    if(tmpinfos[0] in clientsPos.keys()):
+                        clientsPos[tmpinfos[0]] = [float(tmpinfos[1]), float(tmpinfos[2])]
                 
 
 
@@ -228,8 +230,9 @@ while running:
         tmpt = "~"
         tmpt += name + '|' + str(playerPos[0]) + '|' + str(playerPos[1]) + '&&'
         if event.type == pygame.QUIT:
+            textResult = '>' + name + '&&'
+            client.sendall(textResult.encode())
             running = False
-
 
         if event.type == pygame.KEYDOWN and isChatting:
             if event.key == pygame.K_RETURN: 
@@ -268,7 +271,6 @@ while running:
                 playerVelocity[0] = 0
                 playerVelocity[1] = 0
             
-            client.sendall(tmpt.encode())
 
             if event.key == pygame.K_w:
                 playerVelocity[1] -= playerSpeed
@@ -280,7 +282,6 @@ while running:
                 playerVelocity[0] += playerSpeed
 
         elif event.type == pygame.KEYUP:
-            client.sendall(tmpt.encode())
             if event.key == pygame.K_w:
                 playerVelocity[1] =0
             if event.key == pygame.K_a:
@@ -293,6 +294,7 @@ while running:
     if not isChatting:
         playerPos[0] += playerVelocity[0] * deltaTime
         playerPos[1] += playerVelocity[1] * deltaTime
+        client.sendall(tmpt.encode())
 
  
 
@@ -302,6 +304,10 @@ while running:
 
     for i in clientsImage.keys():
         screen.blit(clientsImage[i], [worldToCamera(clientsPos[i])[0] - 50, worldToCamera(clientsPos[i])[1] - 50])
+        iImg = font1.render(i,True,(90,150,120))
+        r = iImg.get_rect()
+        r.center = (worldToCamera(clientsPos[i])[0], worldToCamera(clientsPos[i])[1] - 70)
+        screen.blit(iImg, r)
 
     screen.blit(tempPlayerImage, [worldToCamera(playerPos)[0] - 50, worldToCamera(playerPos)[1] - 50])
     screen.blit(tempPlayerImage, worldToCamera([0, 0]))

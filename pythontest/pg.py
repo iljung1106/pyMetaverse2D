@@ -86,6 +86,13 @@ def engkor(text):
  
 VK_HANGUEL = 0x15
 
+def isNumber(s):
+  try:
+    float(s)
+    return True
+  except ValueError:
+    return False
+
 
 SIZE = width,height = 1280,720
 
@@ -176,7 +183,6 @@ def addText(tmpText):
     print(texts)
 
 def consoles(): 
-    global eney,enex 
     while True: 
         msgs=client.recv(1024)
         msgs = msgs.decode('utf-8')
@@ -191,13 +197,14 @@ def consoles():
                     clientsImage[tmpinfos[0]] = pygame.transform.scale(clientsImage[tmpinfos[0]], (100,100))
                     clientsPos[tmpinfos[0]] = [0,0]
                 if msg[0] == '<':
-                    tmpinfos = msg[1:].split("|")          
+                    tmpinfos = msg[1:].split("|")        
+                    print('remove!')  
                     if(tmpinfos[0] in clientsPos.keys()):
                         del clientsImage[tmpinfos[0]]
                         del clientsPos[tmpinfos[0]]
                 if msg[0] == '~':
                     tmpinfos = msg[1:].split("|")
-                    if(tmpinfos[0] in clientsPos.keys()):
+                    if(tmpinfos[0] in clientsPos.keys() and isNumber(tmpinfos[1]) and isNumber(tmpinfos[2])):
                         clientsPos[tmpinfos[0]] = [float(tmpinfos[1]), float(tmpinfos[2])]
                 
 
@@ -230,9 +237,10 @@ while running:
         tmpt = "~"
         tmpt += name + '|' + str(playerPos[0]) + '|' + str(playerPos[1]) + '&&'
         if event.type == pygame.QUIT:
-            textResult = '>' + name + '&&'
+            textResult = '<' + name + '&&'
             client.sendall(textResult.encode())
             running = False
+            break
 
         if event.type == pygame.KEYDOWN and isChatting:
             if event.key == pygame.K_RETURN: 

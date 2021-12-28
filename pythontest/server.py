@@ -15,41 +15,65 @@ def threaded(client_socket, addr):
         tmpdata = tmpdata.encode()
         client_socket.sendall(tmpdata)
     while True: 
+        dobreak = False
+        # try:
+        if True: #임시
+            datas = client_socket.recv(1024)
+            datas = datas.decode()
+            for data in datas.split('&&'):
 
-        try:
-            data = client_socket.recv(1024)
+                if not data: 
+                    break
 
-            if not data: 
-                print('Disconnected by ' + addr[0],':',addr[1])
-                break
+                # print('Received from ' + addr[0],':',addr[1] , data)
 
-            print('Received from ' + addr[0],':',addr[1] , data.decode())
-
-            if data.decode()[0] == '`':
-                for i in clients:
-                    i.sendall(data) 
-            elif data.decode()[0] == '>':
-                tmp = data.decode()[1:].split('|')
-                clientInfos[tmp[0]] = tmp[1]
-                name = tmp[1]
-                for i in clients:
-                    if i != client_socket:
-                        i.sendall(data)              
-            elif data.decode()[0] == '~':
-                for i in clients:
-                    i.sendall(data) 
-
-        except ConnectionResetError as e:
-            clients.remove(client_socket)
-            del clientInfos[name]
-            print('Disconnected by ' + addr[0],':',addr[1])
-            tmpdata = "<"
-            tmpdata += name + '|' + clientInfos[name]
-            tmpdata = tmpdata.encode()
-            client_socket.sendall(tmpdata)
+                if data[0] == '`':
+                    for i in clients:
+                        if i:
+                            i.sendall(data.encode()) 
+                if data[0] == '<':
+                    del clientInfos[name]
+                    for i in clients:
+                        if i:
+                            i.sendall(data.encode()) 
+                            start_new_thread(lateSendall, (i, data)) 
+                            dobreak = True
+                            clients.remove(client_socket)
+                            print('remove')
+                            client_socket.close() 
+                            break
+                elif data[0] == '>':
+                    tmp = data[1:].split('|')
+                    clientInfos[tmp[0]] = tmp[1]
+                    name = tmp[0]
+                    for i in clients:
+                        if i != client_socket:
+                            if i:
+                                i.sendall(data.encode())              
+                elif data[0] == '~':
+                    for i in clients:
+                        if i and data:
+                            i.sendall(data.encode()) 
+        if dobreak:
             break
+
+        # except ConnectionResetError as e:
+        #     clients.remove(client_socket)
+        #     del clientInfos[name]
+        #     print('Disconnected by ' + addr[0],':',addr[1])
+        #     tmpdata = "<"
+        #     tmpdata += name + '|' + clientInfos[name]
+        #     tmpdata = tmpdata.encode()
+        #     client_socket.sendall(tmpdata)
+        #     break
              
     client_socket.close() 
+
+
+def lateSendall(i, data):
+    i.sendall(data.encode())
+    print('lateSend')
+
 
 
 HOST = '0.0.0.0'
@@ -72,3 +96,5 @@ while True:
     start_new_thread(threaded, (client_socket, addr)) 
 
 server_socket.close()
+while 1:
+    pass

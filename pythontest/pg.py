@@ -12,6 +12,7 @@ import socket #소켓
 import threading #멀티쓰레딩
 from PIL import Image
 import os
+import sys
 
 #-*- coding: utf-8 -*-
 
@@ -128,6 +129,7 @@ def get_hanguel_state():
     return (hllDll.GetKeyState(VK_HANGUEL) & 0x15)
  
 
+os.chdir(sys.path[0])
 
 text1 = '텍스트를 입력하려면 엔터키를 누르세요'
 font1 = pygame.font.Font('gothic.ttf',15)

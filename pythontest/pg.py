@@ -208,7 +208,7 @@ def acceptC():
     thr=threading.Thread(target=consoles,args=()) 
     thr.Daemon=True 
     textResult = '>' + name + '|' + image_url + '&&'
-    client.send(textResult.encode())
+    client.sendall(textResult.encode())
     thr.start()
 
 
@@ -267,34 +267,28 @@ while running:
                 isChatting = True
                 playerVelocity[0] = 0
                 playerVelocity[1] = 0
-
+            
+            client.sendall(tmpt.encode())
 
             if event.key == pygame.K_w:
                 playerVelocity[1] -= playerSpeed
-                client.sendall(tmpt.encode())
             if event.key == pygame.K_a:
                 playerVelocity[0] -= playerSpeed
-                client.sendall(tmpt.encode())
             if event.key == pygame.K_s:
                 playerVelocity[1] += playerSpeed
-                client.sendall(tmpt.encode())
             if event.key == pygame.K_d:
                 playerVelocity[0] += playerSpeed
-                client.sendall(tmpt.encode())
 
         elif event.type == pygame.KEYUP:
+            client.sendall(tmpt.encode())
             if event.key == pygame.K_w:
                 playerVelocity[1] =0
-                client.sendall(tmpt.encode())
             if event.key == pygame.K_a:
                 playerVelocity[0] =0
-                client.sendall(tmpt.encode())
             if event.key == pygame.K_s:
                 playerVelocity[1] =0
-                client.sendall(tmpt.encode())
             if event.key == pygame.K_d:
                 playerVelocity[0] =0
-                client.sendall(tmpt.encode())
 
     if not isChatting:
         playerPos[0] += playerVelocity[0] * deltaTime

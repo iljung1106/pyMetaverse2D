@@ -226,7 +226,7 @@ while running:
     CameraPos[1] = (playerPos[1] + CameraPos[1] * 5) / 6
     for event in pygame.event.get():
         tmpt = "~"
-        tmpt += name + '|' + str(playerPos[0]) + '|' + str(playerPos[1])
+        tmpt += name + '|' + str(playerPos[0]) + '|' + str(playerPos[1]) + '&&'
         if event.type == pygame.QUIT:
             running = False
 
